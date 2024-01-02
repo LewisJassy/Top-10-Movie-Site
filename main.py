@@ -36,7 +36,9 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    # Execute a SQL Select query on the Movie model and retrieve the result set as scalar values(Single value)
+    movies_query = db.session.execute(db.select(Movie).order_by(Movie.id)).scalars()
+    return render_template("index.html", movies=movies_query)
 
 
 if __name__ == '__main__':
