@@ -17,6 +17,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Movies.db"
 db.init_app(app)
 
 class Movie(db.Model):
+    """Represents a movie in the database."""
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, unique=True, nullable=False)
     year = db.Column(db.Integer, nullable=False)
@@ -27,6 +29,7 @@ class Movie(db.Model):
     img_url = db.Column(db.String, nullable=False)
 
     def __repr__(self):
+        """Returns a string representation of the movie."""
         return f"Title: {self.title}, Year: {self.year}"
 
 with app.app_context():
@@ -34,11 +37,15 @@ with app.app_context():
 
 # creating a wtform that updated the rating and review
 class MovieForm(FlaskForm):
+    """Form for editing a movie's rating and review."""
+
     rating = IntegerField('Rating', validators=[DataRequired()])
     review = StringField("Review", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 class MovieAddForm(FlaskForm):
+    """Form for adding a new movie."""
+
     title = StringField('Title', validators=[DataRequired()])
     year = IntegerField('Year', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
@@ -50,6 +57,8 @@ class MovieAddForm(FlaskForm):
 
 
 def add_movie(title, year, description, rating, ranking, review, img_url):
+    """Adds a new movie to the database."""
+
     movie = Movie(
         title=title,
         year=year,
@@ -66,8 +75,15 @@ def add_movie(title, year, description, rating, ranking, review, img_url):
 
 @app.route("/")
 def home():
+    """Displays the home page with a list of movies."""
+    
     # Execute a SQL Select query on the Movie model and retrieve the result set as scalar values(Single value)
-    movies_query = db.session.execute(db.select(Movie).order_by(Movie.id)).scalars()
+    movies_query = db.session.execute(db.select(Movie).order_by(Movie.rating)).scalars().all()
+    # This loop assigns rankings to movies based on their position in the sorted list, and the ranking are stored in the db
+    # This type of ranking is often used when displaying a sorted list where the top item has the highest rank, the second item has the second-highest rank, and so on
+    for i in range(len(movies_query)):
+        movies_query[i].ranking = len(movies_query) - i
+    db.session.commit()
     return render_template("index.html", movies=movies_query)
 
 
