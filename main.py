@@ -76,7 +76,7 @@ def add_movie(title, year, description, rating, ranking, review, img_url):
 @app.route("/")
 def home():
     """Displays the home page with a list of movies."""
-    
+
     # Execute a SQL Select query on the Movie model and retrieve the result set as scalar values(Single value)
     movies_query = db.session.execute(db.select(Movie).order_by(Movie.rating)).scalars().all()
     # This loop assigns rankings to movies based on their position in the sorted list, and the ranking are stored in the db
@@ -130,4 +130,4 @@ def add_movie_route():
     return render_template("add.html", form=form)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
