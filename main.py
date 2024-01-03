@@ -38,6 +38,31 @@ class MovieForm(FlaskForm):
     review = StringField("Review", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
+class MovieAddForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    year = IntegerField('Year', validators=[DataRequired()])
+    description = StringField('Description', validators=[DataRequired()])
+    rating = IntegerField('Rating', validators=[DataRequired()])
+    ranking = IntegerField('Ranking', validators=[DataRequired()])
+    review = StringField('Review', validators=[DataRequired()])
+    img_url = StringField('Image URL', validators=[DataRequired()])
+    submit = SubmitField('Add Movie')
+
+
+def add_movie(title, year, description, rating, ranking, review, img_url):
+    movie = Movie(
+        title=title,
+        year=year,
+        description=description,
+        rating=rating,
+        ranking=ranking,
+        review=review,
+        img_url=img_url
+    )
+
+    db.session.add(movie)
+    db.session.commit()
+
 
 @app.route("/")
 def home():
@@ -62,6 +87,31 @@ def rate_movie():
     else:
         # Handle the case where movie_id is not found
         return render_template("error.html", error_message="Movie not found")
+    
+@app.route("/delete/<int:movie_id>", methods=["GET", "POST"])
+def delete(movie_id):
+    delete_movie = Movie.query.get_or_404(movie_id)
+    db.session.delete(delete_movie)
+    db.session.commit()
+    return redirect(url_for("home"))
+    
+@app.route('/add', methods=['GET', 'POST'])
+def add_movie_route():
+    form = MovieAddForm()
+
+    if form.validate_on_submit():
+        add_movie(
+            title=form.title.data,
+            year=form.year.data,
+            description=form.description.data,
+            rating=form.rating.data,
+            ranking=form.ranking.data,
+            review=form.review.data,
+            img_url=form.img_url.data
+        )
+        return redirect(url_for("home"))
+
+    return render_template("add.html", form=form)
 
 if __name__ == '__main__':
     app.run(debug=True)
